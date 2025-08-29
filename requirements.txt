@@ -2,3 +2,6 @@ streamlit
 pandas
 numpy
 scikit-learn
+joblib
+openai
+faiss-cpu        # optional: remove if FAISS unavailable; fallback will be used
