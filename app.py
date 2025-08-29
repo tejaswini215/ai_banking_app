@@ -2,11 +2,10 @@ import os
 import streamlit as st
 import pandas as pd
 
-# --- Import helper functions ---
+# --- Import helper functions if available ---
 try:
     from analyzer import load_transactions, detect_anomalies, kpis
 except ImportError:
-    # Fallback dummy functions
     def load_transactions(path):
         return pd.read_csv(path)
 
@@ -32,27 +31,27 @@ except ImportError:
             return "❓ FAQ data not available."
 
 
-# --- Streamlit Page Config ---
-st.set_page_config(page_title="AI SmartBanking Demo", layout="wide")
-st.title("💳 AI-Powered SmartBanking — Demo App")
+# --- Streamlit Config ---
+st.set_page_config(page_title="AI SmartBanking", layout="wide")
+st.title("💳 AI-Powered SmartBanking — Web App")
 
-# --- Default dataset paths ---
+
+# --- Default data paths ---
 DATA_DIR = "data"
 CREDIT_DATA = os.path.join(DATA_DIR, "credit_test.csv")
 BANK_DATA = os.path.join(DATA_DIR, "AI_SmartBanking_Dataset.csv")
 FAQ_DATA = os.path.join(DATA_DIR, "SBI loan FAQs.json")
 
 
-# --- Load default data ---
 def load_default_data():
-    df = None
+    """Try loading default datasets from /data folder."""
     if os.path.exists(CREDIT_DATA):
-        df = load_transactions(CREDIT_DATA)
-        st.caption(f"✅ Loaded default dataset: {CREDIT_DATA}")
+        st.caption("✅ Loaded default dataset: credit_test.csv")
+        return load_transactions(CREDIT_DATA)
     elif os.path.exists(BANK_DATA):
-        df = load_transactions(BANK_DATA)
-        st.caption(f"✅ Loaded default dataset: {BANK_DATA}")
-    return df
+        st.caption("✅ Loaded default dataset: AI_SmartBanking_Dataset.csv")
+        return load_transactions(BANK_DATA)
+    return None
 
 
 # --- Sidebar Upload ---
@@ -61,13 +60,12 @@ uploaded_csv = st.sidebar.file_uploader("📂 Upload a transactions CSV", type=[
 
 
 # --- Tabs ---
-tabs = st.tabs(["📊 Dashboard", "🔍 Transaction Analyzer",
-                "🧠 Anomaly Detection", "🤖 Banking Chatbot"])
+tabs = st.tabs(["📊 Dashboard", "🔍 Analyzer", "🧠 Anomalies", "🤖 Chatbot"])
 
 
 # --- Dashboard ---
 with tabs[0]:
-    st.subheader("Overview Dashboard")
+    st.subheader("📊 Overview Dashboard")
 
     df = None
     try:
@@ -77,14 +75,14 @@ with tabs[0]:
         else:
             df = load_default_data()
     except Exception as e:
-        st.error(f"⚠️ Could not load transactions. Error: {e}")
+        st.error(f"⚠️ Could not load data: {e}")
 
     if df is None or df.empty:
-        st.info("📂 Please upload a CSV or add data files in `/data/` folder.")
+        st.info("📂 Please upload a CSV or add datasets in `/data/` folder.")
     else:
         st.dataframe(df.head(20))
 
-        # Show KPIs
+        # KPIs
         metrics = kpis(df)
         c1, c2, c3 = st.columns(3)
         c1.metric("Transactions", f"{metrics.get('txn_count', 0):,}")
@@ -92,33 +90,32 @@ with tabs[0]:
         c3.metric("Avg. Txn", f"{metrics.get('avg_txn', 0):,.2f}")
 
 
-# --- Transaction Analyzer ---
+# --- Analyzer ---
 with tabs[1]:
-    st.subheader("Transaction Analyzer")
+    st.subheader("🔍 Transaction Analyzer")
     if df is None or df.empty:
-        st.info("⚠️ Load or upload a transactions file first.")
+        st.info("⚠️ No data loaded.")
     else:
-        st.write("🔎 First 50 transactions:")
         st.dataframe(df.head(50))
 
 
 # --- Anomaly Detection ---
 with tabs[2]:
-    st.subheader("Anomaly Detection")
+    st.subheader("🧠 Anomaly Detection")
     if df is None or df.empty:
-        st.info("⚠️ Load or upload a transactions file first.")
+        st.info("⚠️ No data loaded.")
     else:
         anomalies = detect_anomalies(df)
         if anomalies.empty:
-            st.success("✅ No anomalies detected.")
+            st.success("✅ No anomalies found.")
         else:
-            st.warning("⚠️ Potential anomalies found:")
+            st.warning("⚠️ Potential anomalies:")
             st.dataframe(anomalies)
 
 
-# --- Banking Chatbot ---
+# --- Chatbot ---
 with tabs[3]:
-    st.subheader("Banking Chatbot (FAQs)")
+    st.subheader("🤖 Banking Chatbot")
 
     faq_bot = FAQBot(FAQ_DATA if os.path.exists(FAQ_DATA) else None)
 
@@ -127,4 +124,4 @@ with tabs[3]:
         if os.path.exists(FAQ_DATA):
             st.write("🤖:", faq_bot.answer(user_q))
         else:
-            st.info("📂 FAQ file not found in `/data/`. Please add or upload.")
+            st.info("📂 FAQ file not found in `/data/`.")
