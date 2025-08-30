@@ -154,7 +154,7 @@ with tabs[3]:
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel("data/b46c8a0e-7ba4-48a4-912c-2af0d25308ad.xlsx")
+        df = pd.read_excel("data/bank.xlsx")
         # Standardize column names for easier use
         df.columns = df.columns.str.lower().str.strip()
         return df
