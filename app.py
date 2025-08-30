@@ -148,3 +148,45 @@ with tabs[3]:
                 best_q, best_a, score = results[0]
                 st.write(f"**Answer:** {best_a}")
                 st.caption(f"(Matched FAQ: {best_q}, score={score:.2f})")
+
+
+# ----------------- Load Dataset -----------------
+@st.cache_data
+def load_data():
+    try:
+        df = pd.read_excel("data/b46c8a0e-7ba4-48a4-912c-2af0d25308ad.xlsx")
+        # Standardize column names for easier use
+        df.columns = df.columns.str.lower().str.strip()
+        return df
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        return pd.DataFrame()
+
+df = load_data()
+
+# ----------------- Public KPIs -----------------
+st.title("📊 SmartBanking – Transaction Overview")
+
+if not df.empty:
+    st.metric("Total Transactions", len(df))
+    if "amount" in df.columns:
+        st.metric("Total Volume", f"₹{df['amount'].sum():,.2f}")
+    if "amount" in df.columns:
+        st.metric("Average Transaction", f"₹{df['amount'].mean():,.2f}")
+
+# ----------------- Restricted History -----------------
+st.subheader("🔒 Transaction History (Restricted Access)")
+
+access_code = st.text_input("Enter Access Code", type="password")
+
+if st.button("Unlock History"):
+    if access_code == "BANK123":   # you can replace with secure auth later
+        st.success("✅ Access Granted: Showing your transaction history")
+
+        # Display cleaned transaction table
+        if "date" in df.columns and "amount" in df.columns:
+            st.dataframe(df[["date", "amount", "type", "merchant"]].head(50))
+        else:
+            st.dataframe(df.head(50))
+    else:
+        st.error("❌ Invalid Access Code. Permission Denied.")
