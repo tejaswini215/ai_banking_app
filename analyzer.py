@@ -24,15 +24,29 @@ def kpis(df: pd.DataFrame) -> dict:
         "avg_txn": df["Amount"].mean() if "Amount" in df else 0,
     }
 
-def detect_anomalies(df: pd.DataFrame) -> pd.DataFrame:
-    """Detect anomalies in transaction data using Isolation Forest."""
-    if df.empty or "Amount" not in df:
-        return pd.DataFrame()
+# analyzer.py
+from sklearn.ensemble import IsolationForest
 
-    iso = IsolationForest(contamination=0.05, random_state=42)
-    preds = iso.fit_predict(df[["Amount"]])
-    anomalies = df[preds == -1]
-    return anomalies
+def detect_anomalies(df, contamination=0.02):
+    """Detect anomalies in transactions using Isolation Forest."""
+    if df.empty:
+        return df
+
+    # Assume transaction amount column
+    amount_col = None
+    for col in df.columns:
+        if "amount" in col.lower():
+            amount_col = col
+            break
+
+    if not amount_col:
+        raise ValueError("No 'amount' column found in dataset")
+
+    model = IsolationForest(contamination=contamination, random_state=42)
+    df["anomaly"] = model.fit_predict(df[[amount_col]])
+    df["anomaly"] = df["anomaly"].map({1: 0, -1: 1})  # 1=anomaly
+    return df
+
 
 # ------------------ Loan Assessment Utilities ------------------
 
