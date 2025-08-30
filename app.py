@@ -27,8 +27,8 @@ CREDIT_CSV = os.path.join(DATA_DIR, "credit_test.csv")
 BANK_CSV = os.path.join(DATA_DIR, "AI_SmartBanking_Dataset.csv")
 FAQ_JSON = os.path.join(DATA_DIR, "SBI loan FAQs.json")
 
-uploaded_csv = st.sidebar.file_uploader("Upload your transactions (CSV)", type=["csv"])
-uploaded_faq = st.sidebar.file_uploader("Upload FAQ JSON", type=["json"])
+df = load_transactions("data/AI_SmartBanking_Dataset.csv")
+faq_retriever = FAQRetriever("data/SBI loan FAQs.json")
 
 # Load FAQ retriever
 faq_path = None
