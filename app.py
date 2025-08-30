@@ -31,28 +31,19 @@ df = load_transactions("data/AI_SmartBanking_Dataset.csv")
 faq_retriever = FAQRetriever("data/SBI loan FAQs.json")
 
 # Load FAQ retriever
-faq_path = None
-if uploaded_faq is not None:
-    os.makedirs(DATA_DIR, exist_ok=True)
-    faq_path = os.path.join(DATA_DIR, "uploaded_faq.json")
-    with open(faq_path, "wb") as f:
-        f.write(uploaded_faq.getbuffer())
-elif os.path.exists(FAQ_JSON):
-    faq_path = FAQ_JSON
-
-faq_retriever = FAQRetriever(faq_path) if faq_path else FAQRetriever(None)
-
-
 def load_main_df():
-    if uploaded_csv is not None:
-        return pd.read_csv(uploaded_csv)
-    if os.path.exists(CREDIT_CSV):
-        return load_transactions(CREDIT_CSV)
-    if os.path.exists(BANK_CSV):
-        return load_transactions(BANK_CSV)
+    if os.path.exists("data/AI_SmartBanking_Dataset.csv"):
+        return load_transactions("data/AI_SmartBanking_Dataset.csv")
+    elif os.path.exists("data/credit_test.csv"):
+        return load_transactions("data/credit_test.csv")
     return pd.DataFrame()
 
+# --- FAQ Retriever ---
+faq_path = None
+if os.path.exists("data/SBI loan FAQs.json"):
+    faq_path = "data/SBI loan FAQs.json"
 
+faq_retriever = FAQRetriever(faq_path) if faq_path else FAQRetriever(None)
 # -------------------- NAVIGATION --------------------
 tabs = st.tabs(
     ["🏠 Dashboard", "📊 Transactions", "🏦 Loan Assessment", "🤖 Banking Chatbot"]
